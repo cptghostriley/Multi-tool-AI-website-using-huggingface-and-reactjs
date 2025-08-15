@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path'); // Add this for serving static files
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -38,6 +39,9 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Serve static files from React app
+app.use(express.static(path.join(__dirname, "../client/build")));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
@@ -56,9 +60,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 
 // Start server
