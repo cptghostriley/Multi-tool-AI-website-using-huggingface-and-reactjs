@@ -1,4 +1,4 @@
-# MultiApp - AI Tools Platform
+# Nexus AI - AI Tools Platform
 
 A modern full-stack web application that provides AI-powered tools for text generation, image creation, and voice synthesis. Built with React, Node.js, Express, and PostgreSQL, featuring a secure authentication system and real-time AI capabilities.
 
@@ -58,7 +58,6 @@ A modern full-stack web application that provides AI-powered tools for text gene
 ### Backend
 - **Node.js** with **Express.js**
 - **PostgreSQL** database (NeonDB)
-- **JWT** for authentication
 - **bcryptjs** for password hashing
 - **Joi** for request validation
 - **Helmet** for security headers
