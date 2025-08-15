@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "debug": "node -e \"console.log('Node version:', process.version); console.log('Current directory:', process.cwd()); console.log('Files:', require('fs').readdirSync('.')); console.log('Package.json exists:', require('fs').existsSync('./package.json')); try { require('express'); console.log('Express loaded successfully'); } catch(e) { console.log('Express error:', e.message); }\""
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -21,5 +22,9 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
