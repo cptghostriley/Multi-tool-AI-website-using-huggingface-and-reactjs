@@ -7,14 +7,40 @@ import json
 # Load environment variables
 dotenv.load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 
+# Check if API key exists
+api_key = os.environ.get('HUGGINGFACE_API_KEY')
+if not api_key:
+    error_result = {
+        "success": False,
+        "error": "HUGGINGFACE_API_KEY environment variable not found"
+    }
+    print(json.dumps(error_result))
+    sys.exit(1)
+
 API_URL = "https://router.huggingface.co/v1/chat/completions"
 headers = {
-    "Authorization": f"Bearer {os.environ['HUGGINGFACE_API_KEY']}",
+    "Authorization": f"Bearer {api_key}",
 }
 
 def query(payload):
-    response = requests.post(API_URL, headers=headers, json=payload)
-    return response.json()
+    try:
+        response = requests.post(API_URL, headers=headers, json=payload)
+        response.raise_for_status()  # Raises an exception for bad status codes
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        error_result = {
+            "success": False,
+            "error": f"Request failed: {str(e)}"
+        }
+        print(json.dumps(error_result))
+        sys.exit(1)
+    except Exception as e:
+        error_result = {
+            "success": False,
+            "error": f"Unexpected error: {str(e)}"
+        }
+        print(json.dumps(error_result))
+        sys.exit(1)
 
 # Get prompt from command line argument or stdin
 if len(sys.argv) > 1:
@@ -27,33 +53,42 @@ prompt_template = f"""You are a text generator agent, Please provide a clear, we
 
 {user_input}"""
 
-response = query({
-    "messages": [
-        {
-            "role": "user",
-            "content": prompt_template
-        }
-    ],
-    "model": "openai/gpt-oss-20b:fireworks-ai"
-    
-})
-
-# Extract only the content from the response
 try:
-    content = response["choices"][0]["message"]["content"]
-    
-    # Return JSON response for Node.js integration
-    result = {
-        "success": True,
-        "content": content,
-        "prompt": user_input
-    }
-    print(json.dumps(result))
-    
-except KeyError as e:
+    response = query({
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt_template
+            }
+        ],
+        "model": "openai/gpt-oss-20b:fireworks-ai"
+        
+    })
+
+    # Extract only the content from the response
+    try:
+        content = response["choices"][0]["message"]["content"]
+        
+        # Return JSON response for Node.js integration
+        result = {
+            "success": True,
+            "content": content,
+            "prompt": user_input
+        }
+        print(json.dumps(result))
+        
+    except KeyError as e:
+        error_result = {
+            "success": False,
+            "error": f"Error extracting response: {e}",
+            "response": response
+        }
+        print(json.dumps(error_result))
+
+except Exception as e:
     error_result = {
         "success": False,
-        "error": f"Error extracting response: {e}",
-        "response": response
+        "error": f"Script execution error: {str(e)}"
     }
     print(json.dumps(error_result))
+    sys.exit(1)
